@@ -84,7 +84,6 @@ function file_library_field_widget_file_generic_form_alter(&$element, &$form_sta
   $path = backdrop_get_path('module', 'file_library');
   $element['#attached']['js'][] = $path . '/js/file-library.js';
   $element['#attached']['css'][] = $path . '/css/file-library.css';
-  $element['#attached']['icons'] = array('check-fat-fill');// @todo replace
 
   // Add custom process callback for extended handling.
   foreach ($element as $key => $item) {

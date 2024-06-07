@@ -56,19 +56,18 @@
   z-index: 1;
 }
 .file-library-item.file-library-selected::after{
-  content: '';
+  content: '✔';
+  font-size: 2.2em;
+  line-height: 1;
+  color: #77ac02;
   display: block;
-  width: 2em;
-  height: 2em;
-  background: #77ac02;
   position: absolute;
-  top: .5em;
-  right: .5em;/* LTR */
-  mask-image: var(--icon-check-fat-fill);
+  top: 5px;
+  right: 5px;/* LTR */
 }
 [dir="rtl"] .file-library-item.file-library-selected::after {
   right: auto;
-  left: .5em;
+  left: 5px;
 }
 .file-library-item strong {
   word-wrap: anywhere;
