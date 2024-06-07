@@ -1,6 +1,8 @@
 <?php
-// @todo actually add a view (or two?) as config, remove "page" display.
-// @todo decide for a views permission ("Access")
+/**
+ * @file
+ * Code for the File Library module.
+ */
 
 /**
  * Implements hook_field_widget_info_alter().
@@ -209,6 +211,11 @@ function file_library_views_query_alter(&$view, &$query) {
 
 /**
  * Check if we need to handle that view.
+ *
+ * @param view $view
+ *   The view object.
+ *
+ * @return bool
  */
 function _file_library_is_applicable_view($view) {
   if ($view->base_table != 'file_managed') {
@@ -226,6 +233,8 @@ function _file_library_is_applicable_view($view) {
 
 /**
  * Collect all views as form options, that can get used as file picker.
+ *
+ * @return array
  */
 function _file_library_get_applicable_views() {
   $candidates = array();
