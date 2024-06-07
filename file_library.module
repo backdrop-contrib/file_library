@@ -10,7 +10,7 @@
 function file_library_field_widget_info_alter(&$info) {
   // Add a default setting to the file_generic widget type.
   $info['file_generic']['settings']['filepicker'] = FALSE;
-  $info['file_generic']['settings']['filepicker_view'] = 'filepicker';
+  $info['file_generic']['settings']['filepicker_view'] = 'file_library';
 }
 
 /**
