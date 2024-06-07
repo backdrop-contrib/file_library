@@ -1,0 +1,5 @@
+name = File Library
+description = Dialog to pick previously uploaded files and add to file fields.
+backdrop = 1.x
+type = module
+dependencies[] = file

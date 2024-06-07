@@ -1,0 +1,248 @@
+<?php
+// @todo actually add a view (or two?) as config, remove "page" display.
+// @todo decide for a views permission ("Access")
+
+/**
+ * Implements hook_field_widget_info_alter().
+ */
+function file_library_field_widget_info_alter(&$info) {
+  // Add a default setting to the file_generic widget type.
+  $info['file_generic']['settings']['filepicker'] = FALSE;
+  $info['file_generic']['settings']['filepicker_view'] = 'filepicker';
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Additional settings for the file widget, visible on field instance settings
+ * form.
+ */
+function file_library_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
+  if ($form['#instance']['widget']['type'] != 'file_generic') {
+    return;
+  }
+  $widget_settings = $form['#instance']['widget']['settings'];
+
+  $form['instance']['widget']['settings']['filepicker'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable file picker'),
+    '#default_value' => $widget_settings['filepicker'],
+    '#weight' => 100,
+    '#description' => t('Let people pick from files previously uploaded to the server.'),
+  );
+  $form['instance']['widget']['settings']['filepicker_view'] = array(
+    '#type' => 'select',
+    '#title' => t('File picker view'),
+    '#options' => _file_library_get_applicable_views(),
+    '#default_value' => $widget_settings['filepicker_view'],
+    '#weight' => 100,
+    '#description' => t('All views with the base table "file_managed" and the query tag "filter_by_custom_arg" are considered.'),
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="instance[widget][settings][filepicker]"]' => array('checked' => FALSE),
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_theme().
+ */
+function file_library_theme() {
+  return array(
+    'file_library_filepicker' => array(
+      'variables' => array(
+        'content' => NULL,
+        'submit_form' => NULL,
+      ),
+      'template' => 'file-library-filepicker',
+      'path' => backdrop_get_path('module', 'file_library') . '/templates',
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_widget_WIDGET_TYPE_form_alter().
+ */
+function file_library_field_widget_file_generic_form_alter(&$element, &$form_state, $context) {
+  // Filepicker disabled.
+  if (!$context['instance']['widget']['settings']['filepicker']) {
+    return;
+  }
+  $filepicker_view = $context['instance']['widget']['settings']['filepicker_view'];
+  // Edge case: no view set.
+  if (empty($filepicker_view)) {
+    return;
+  }
+  // Check access to view.
+  $view = views_get_view($filepicker_view);
+  if (!$view || !$view->access('default')) {
+    return;
+  }
+
+  $element['#attached']['library'][] = array('system', 'backdrop.ajax');
+  $path = backdrop_get_path('module', 'file_library');
+  $element['#attached']['js'][] = $path . '/js/file-library.js';
+  $element['#attached']['css'][] = $path . '/css/file-library.css';
+  $element['#attached']['icons'] = array('check-fat-fill');// @todo replace
+
+  // Add custom process callback for extended handling.
+  foreach ($element as $key => $item) {
+    if (strpos($key, '#') === 0) {
+      continue;
+    }
+    $element[$key]['#process'][] = 'file_library_process_filepicker_enable';
+    $element[$key]['#browser_view'] = $filepicker_view;
+  }
+}
+
+/**
+ * Custom process callback.
+ */
+function file_library_process_filepicker_enable($element, $form_state) {
+  if ($element['#browser_view']) {
+    $element['browse_button']['#access'] = TRUE;
+    // Override file_managed_file_browser_open with custom callback.
+    $element['browse_button']['#ajax']['callback'] = 'file_library_filepicker_open';
+  }
+
+  return $element;
+}
+
+/**
+ * Custom AJAX callback.
+ */
+function file_library_filepicker_open($form, &$form_state) {
+  // Get the parent "managed_file" element.
+  $parents = $form_state['triggering_element']['#array_parents'];
+  array_pop($parents);
+  $element = backdrop_array_get_nested_value($form, $parents);
+
+  $view = views_get_view($element['#browser_view']);
+  $view->init_display('default');
+  // Pass arguments to dynamically filter in views query alter hook.
+  $args = array(
+    'field',
+    $element['#entity_type'] . '.' . $element['#bundle'],
+    $element['#field_name'],
+  );
+  $view->set_arguments($args);
+  $view->pre_execute();
+  $view->execute();
+  $content = $view->preview();
+  $view_title = $view->get_title();
+  $dialog_title = !empty($view_title) ? check_plain($view_title) : t('Pick file');
+
+  $submit_form = backdrop_get_form('file_managed_file_browser_form');
+  $html = theme('file_library_filepicker', array(
+    'content' => $content,
+    'submit_form' => backdrop_render($submit_form),
+  ));
+
+  $settings = array(
+    'file' => array(
+      'browser' => array(
+        'selectedFid' => NULL,
+        'currentFidElement' => '[name="' . $element['fid']['#name'] . '"]',
+      ),
+    ),
+  );
+  $options = array(
+    'dialogClass' => 'file-browser-container',
+    'width' => '56%',
+    'modal' => TRUE,
+  );
+
+  $commands = array();
+  $commands[] = ajax_command_settings($settings, TRUE);
+  $commands[] = ajax_command_open_dialog('#file-browser-modal', $dialog_title, $html, $options);
+  return array('#type' => 'ajax', '#commands' => $commands);
+}
+
+/**
+ * Implements hook_views_pre_view().
+ */
+function file_library_views_pre_view(&$view, &$display_id, &$args) {
+  if (!_file_library_is_applicable_view($view)) {
+    return;
+  }
+
+  // Add the CSS row class our JavaScript expects.
+  $style_options = $view->display_handler->get_option('style_options');
+  $style_options['row_class'] = !empty($style_options['row_class']) ? $style_options['row_class'] . ' file-library-item' : 'file-library-item';
+  $view->display_handler->set_option('style_options', $style_options);
+}
+
+/**
+ * Implements hook_views_query_alter().
+ *
+ * Alters views queries tagged with "filter_by_custom_arg" based on field
+ * info passed as argument to the view.
+ */
+function file_library_views_query_alter(&$view, &$query) {
+  if (!_file_library_is_applicable_view($view)) {
+    return;
+  }
+
+  $view_args = $view->args;
+  if (!count($view_args)) {
+    return;
+  }
+  if (count($view_args) == 3 && $view_args[0] == 'field') {
+    $uri_scheme = config_get('field.field.' . $view_args[2], 'settings.uri_scheme');
+    $extensions = config_get('field.instance.' . $view_args[1] . '.' . $view_args[2], 'settings.file_extensions');
+    if (!empty($uri_scheme) && !empty($extensions)) {
+      $regex = '^' . $uri_scheme . ':.+(' . str_replace(' ', '|', $extensions) . ')$';
+      $query->add_where(0, 'file_managed.uri', $regex, 'RLIKE');
+    }
+  }
+  elseif (count($view_args) == 2 && $view_args[0] == 'filter') {
+    // @todo does the status check belong here?
+    $config = config('filter.format.' . $view_args[1]);
+    $uri_scheme = $config->get('editor_settings.file_upload.scheme');
+    $extensions = $config->get('editor_settings.file_upload.file_extensions');
+    if (!empty($uri_scheme) && !empty($extensions)) {
+      $regex = '^' . $uri_scheme . ':.+(' . str_replace(' ', '|', $extensions) . ')$';
+      $query->add_where(0, 'file_managed.uri', $regex, 'RLIKE');
+    }
+  }
+}
+
+/**
+ * Check if we need to handle that view.
+ */
+function _file_library_is_applicable_view($view) {
+  if ($view->base_table != 'file_managed') {
+    return FALSE;
+  }
+  if (!$view->access('default')) {
+    return FALSE;
+  }
+  $query_options = $view->display_handler->get_option('query');
+  if (empty($query_options['options']['query_tags']) || !in_array('filter_by_custom_arg', $query_options['options']['query_tags'])) {
+    return FALSE;
+  }
+  return TRUE;
+}
+
+/**
+ * Collect all views as form options, that can get used as file picker.
+ */
+function _file_library_get_applicable_views() {
+  $candidates = array();
+  $configs = config_get_names_with_prefix('views.view.');
+
+  foreach ($configs as $name) {
+    $config = config($name);
+    if ($config->get('base_table') != 'file_managed' || $config->get('disabled')) {
+      continue;
+    }
+    if ($query_tags = $config->get('display.default.display_options.query.options.query_tags')) {
+      if (in_array('filter_by_custom_arg', $query_tags)) {
+        $machine_name = $config->get('name');
+        $candidates[$machine_name] = check_plain($config->get('human_name')) . ' (' . $machine_name . ')';
+      }
+    }
+  }
+  return $candidates;
+}
