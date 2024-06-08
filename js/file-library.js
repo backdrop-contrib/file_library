@@ -21,7 +21,7 @@
     let $browserContainer = $element.find(".file-browser-view");
     if ($browserContainer.length) {
       $browserContainer.once('file-library').on('click keydown', '[data-fid]', function (event) {
-        if (event.type == 'keydown' && event.which !== 13) {
+        if (event.type === 'keydown' && event.which !== 13) {
           return;
         }
         $browserContainer.find('.file-library-selected').removeClass('file-library-selected');
