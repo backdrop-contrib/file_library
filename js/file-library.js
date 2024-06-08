@@ -20,8 +20,11 @@
   Backdrop.fileLibrary.dialogAfterCreate = function(event, dialog, $element) {
     let $browserContainer = $element.find(".file-browser-view");
     if ($browserContainer.length) {
-      // @todo keydown, dblclick
-      $browserContainer.once('file-library').on('click', '[data-fid]', function () {
+      // @todo dblclick
+      $browserContainer.once('file-library').on('click keydown', '[data-fid]', function (event) {
+        if (event.type == 'keydown' && event.which !== 13) {
+          return;
+        }
         $browserContainer.find('.file-library-selected').removeClass('file-library-selected');
         $(this).closest('.file-library-item').addClass('file-library-selected');
 
