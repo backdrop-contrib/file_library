@@ -102,6 +102,8 @@ function file_library_field_widget_file_generic_form_alter(&$element, &$form_sta
  */
 function file_library_process_filepicker_enable($element, $form_state) {
   if ($element['#browser_view']) {
+    // This form element is provided by the file module.
+    // @see file_managed_file_process().
     $element['browse_button']['#access'] = TRUE;
     // Override file_managed_file_browser_open with custom callback.
     $element['browse_button']['#ajax']['callback'] = 'file_library_filepicker_open';
@@ -130,13 +132,13 @@ function file_library_filepicker_open($form, &$form_state) {
   $view->set_arguments($args);
   $view->pre_execute();
   $view->execute();
-  $content = $view->preview();
+  $dialog_content = $view->preview();
   $view_title = $view->get_title();
   $dialog_title = !empty($view_title) ? check_plain($view_title) : t('Pick file');
 
   $submit_form = backdrop_get_form('file_managed_file_browser_form');
   $html = theme('file_library_filepicker', array(
-    'content' => $content,
+    'content' => $dialog_content,
     'submit_form' => backdrop_render($submit_form),
   ));
 
@@ -148,7 +150,7 @@ function file_library_filepicker_open($form, &$form_state) {
       ),
     ),
   );
-  $options = array(
+  $dialog_options = array(
     'dialogClass' => 'file-browser-container',
     'width' => '56%',
     'modal' => TRUE,
@@ -156,7 +158,7 @@ function file_library_filepicker_open($form, &$form_state) {
 
   $commands = array();
   $commands[] = ajax_command_settings($settings, TRUE);
-  $commands[] = ajax_command_open_dialog('#file-browser-modal', $dialog_title, $html, $options);
+  $commands[] = ajax_command_open_dialog('#file-browser-modal', $dialog_title, $html, $dialog_options);
   return array('#type' => 'ajax', '#commands' => $commands);
 }
 
@@ -225,7 +227,11 @@ function _file_library_is_applicable_view($view) {
     return FALSE;
   }
   $query_options = $view->display_handler->get_option('query');
-  if (empty($query_options['options']['query_tags']) || !in_array('filter_by_custom_arg', $query_options['options']['query_tags'])) {
+  if (empty($query_options['options']['query_tags'])) {
+    return FALSE;
+  }
+  // This is the views query tag we're after.
+  if (!in_array('filter_by_custom_arg', $query_options['options']['query_tags'])) {
     return FALSE;
   }
   return TRUE;
