@@ -19,6 +19,9 @@ access the file library are configurable via views admin UI.
 - Install this module using the
   [official Backdrop CMS instructions](https://docs.backdropcms.org/documentation/extend-with-modules)
 
+Go to a file field setting (like admin/structure/types/manage/NODE_TYPE/fields/FIELDNAME),
+check the "Enable file picker" setting at the bottom and save.
+
 ## Issues
 
 Bugs and feature requests should be reported in the
