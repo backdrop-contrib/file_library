@@ -131,7 +131,7 @@ function file_library_filepicker_open($form, &$form_state) {
   );
   $view->set_arguments($args);
   $view->pre_execute();
-  // @todo newliy uploaded files (in same node form) are not yet in the list
+  // @todo newly uploaded files (in same node form) are not yet in the list
   // of files to pick (views caching?). Is that something to fix?
   $view->execute();
   $dialog_content = $view->preview();
