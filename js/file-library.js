@@ -1,3 +1,7 @@
+/**
+ * @file
+ * Backdrop behaviors for the File Library.
+ */
 (function ($) {
   "use strict";
 
@@ -18,12 +22,13 @@
     if ($browserContainer.length) {
       // @todo keydown, dblclick
       $browserContainer.once('file-library').on('click', '[data-fid]', function () {
-        console.log($(this).closest('.file-library-item'));
         $browserContainer.find('.file-library-selected').removeClass('file-library-selected');
         $(this).closest('.file-library-item').addClass('file-library-selected');
 
         let selectedFid = $(this).data('fid');
-        $('form.file-managed-file-browser-form [name="fid"]').val(selectedFid);// magic!
+        // From here on the file module, which provides the "fid" item, takes
+        // over.
+        $('form.file-managed-file-browser-form [name="fid"]').val(selectedFid);
       });
     }
   };
