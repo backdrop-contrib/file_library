@@ -20,7 +20,6 @@
   Backdrop.fileLibrary.dialogAfterCreate = function(event, dialog, $element) {
     let $browserContainer = $element.find(".file-browser-view");
     if ($browserContainer.length) {
-      // @todo dblclick
       $browserContainer.once('file-library').on('click keydown', '[data-fid]', function (event) {
         if (event.type == 'keydown' && event.which !== 13) {
           return;
@@ -32,6 +31,10 @@
         // From here on the file module, which provides the "fid" item, takes
         // over.
         $('form.file-managed-file-browser-form [name="fid"]').val(selectedFid);
+      }).on('dblclick', '[data-fid]', function() {
+        // Select this item and submit the form in one go.
+        $(this).click();
+        $(this).closest('.ui-dialog').find('.ui-dialog-buttonpane .button-primary').click();
       });
     }
   };
