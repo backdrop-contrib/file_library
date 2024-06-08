@@ -6,6 +6,8 @@ existing file" will appear, next to the upload form item.
 
 This button opens a dialog, with a view as content.
 
+![Screenshot of the dialog with a file selected](https://raw.githubusercontent.com/backdrop-contrib/file_library/1.x-1.x/screenshots/file-library-dialog.webp)
+
 The view is configurable. You can also create (or clone) multiple views and
 configure the view per field in the field instance settings.
 
