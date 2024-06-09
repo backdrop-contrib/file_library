@@ -90,7 +90,8 @@ function file_library_field_widget_file_generic_form_alter(&$element, &$form_sta
     'uri_scheme' => $context['field']['settings']['uri_scheme'],
     'extensions' => $instance['settings']['file_extensions'],
   );
-  tempstore_set('file_library', $tempstore_key, $tempstore_value, REQUEST_TIME + 3600);
+  $expire = config_get('system.core', 'form_cache_expiration');
+  tempstore_set('file_library', $tempstore_key, $tempstore_value, REQUEST_TIME + $expire);
 
   $element['#attached']['library'][] = array('system', 'backdrop.ajax');
   $path = backdrop_get_path('module', 'file_library');
