@@ -82,6 +82,16 @@ function file_library_field_widget_file_generic_form_alter(&$element, &$form_sta
     return;
   }
 
+  // Put relevant settings into tempstore, to make them available for
+  // hook_views_query_alter().
+  $instance = $context['instance'];
+  $tempstore_key = $instance['entity_type'] . '.' . $instance['bundle'] . '.' . $instance['field_name'];
+  $tempstore_value = array(
+    'uri_scheme' => $context['field']['settings']['uri_scheme'],
+    'extensions' => $instance['settings']['file_extensions'],
+  );
+  tempstore_set('file_library', $tempstore_key, $tempstore_value, REQUEST_TIME + 3600);
+
   $element['#attached']['library'][] = array('system', 'backdrop.ajax');
   $path = backdrop_get_path('module', 'file_library');
   $element['#attached']['js'][] = $path . '/js/file-library.js';
@@ -94,6 +104,7 @@ function file_library_field_widget_file_generic_form_alter(&$element, &$form_sta
     }
     $element[$key]['#process'][] = 'file_library_process_filepicker_enable';
     $element[$key]['#browser_view'] = $filepicker_view;
+    $element[$key]['#tempstore_key'] = $tempstore_key;
   }
 }
 
@@ -124,12 +135,9 @@ function file_library_filepicker_open($form, &$form_state) {
   $view = views_get_view($element['#browser_view']);
   $view->init_display('default');
   // Pass arguments to dynamically filter in views query alter hook.
-  $args = array(
-    'field',
-    $element['#entity_type'] . '.' . $element['#bundle'],
-    $element['#field_name'],
-  );
-  $view->set_arguments($args);
+  if ($element['#tempstore_key']) {
+    $view->set_arguments(array($element['#tempstore_key']));
+  }
   $view->pre_execute();
   // @todo newly uploaded files (in same node form) are not yet in the list
   // of files to pick (views caching?). Is that something to fix?
@@ -190,26 +198,9 @@ function file_library_views_query_alter(&$view, &$query) {
   }
 
   $view_args = $view->args;
-  if (!count($view_args)) {
-    return;
-  }
-  if (count($view_args) == 3 && $view_args[0] == 'field') {
-    $uri_scheme = config_get('field.field.' . $view_args[2], 'settings.uri_scheme');
-    $extensions = config_get('field.instance.' . $view_args[1] . '.' . $view_args[2], 'settings.file_extensions');
-    if (!empty($uri_scheme) && !empty($extensions)) {
-      $regex = '^' . $uri_scheme . ':.+(' . str_replace(' ', '|', $extensions) . ')$';
-      $query->add_where(0, 'file_managed.uri', $regex, 'RLIKE');
-    }
-  }
-  elseif (count($view_args) == 2 && $view_args[0] == 'filter') {
-    // @todo does the status check belong here?
-    $config = config('filter.format.' . $view_args[1]);
-    $uri_scheme = $config->get('editor_settings.file_upload.scheme');
-    $extensions = $config->get('editor_settings.file_upload.file_extensions');
-    if (!empty($uri_scheme) && !empty($extensions)) {
-      $regex = '^' . $uri_scheme . ':.+(' . str_replace(' ', '|', $extensions) . ')$';
-      $query->add_where(0, 'file_managed.uri', $regex, 'RLIKE');
-    }
+  if (!empty($view_args) && $filter_values = tempstore_get('file_library', $view_args[0])) {
+    $regex = '^' . $filter_values['uri_scheme'] . ':.+(' . str_replace(' ', '|', $filter_values['extensions']) . ')$';
+    $query->add_where(0, 'file_managed.uri', $regex, 'RLIKE');
   }
 }
 
