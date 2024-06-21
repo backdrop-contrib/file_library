@@ -144,8 +144,8 @@ function file_library_filepicker_open($form, &$form_state) {
   // of files to pick (views caching?). Is that something to fix?
   $view->execute();
   $dialog_content = $view->preview();
-  $view_title = $view->get_title();
-  $dialog_title = !empty($view_title) ? check_plain($view_title) : t('Pick file');
+  $view_title = $view->display_handler->get_option('title');
+  $dialog_title = !empty($view_title) ? $view_title : t('Pick file');
 
   $submit_form = backdrop_get_form('file_managed_file_browser_form');
   $html = theme('file_library_filepicker', array(
