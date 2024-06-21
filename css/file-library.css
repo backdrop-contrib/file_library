@@ -4,17 +4,17 @@
 .file-browser-container .views-view-grid {
   display: block;
 }
+@media (min-width: 32em) {
+  .file-browser-container {
+    min-width: 480px !important;
+  }
+}
 @media (min-width: 48em) {
   .file-browser-container {
-    min-width: 580px !important;
+    min-width: 800px !important;
   }
   .file-browser-container .views-view-grid {
     display: grid;
-  }
-}
-@media (min-width: 62em) {
-  .file-browser-container {
-    min-width: 640px !important;
   }
 }
 @media (min-width: 75em) {
