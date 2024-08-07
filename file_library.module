@@ -162,7 +162,7 @@ function file_library_filepicker_open($form, &$form_state) {
     ),
   );
   $dialog_options = array(
-    'dialogClass' => 'file-browser-container',
+    'classes' => array('ui-dialog' => 'file-browser-container'),
     'width' => '56%',
     'modal' => TRUE,
   );
