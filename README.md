@@ -12,12 +12,12 @@ The view is configurable per field instance. You can also create (or clone) mult
 and pick the one you prefer per field.
 
 And, of course, you can leverage the full flexibility of views using the
-views admin UI.
+Views admin UI.
 
 Regardless of configured views filters, the file picker will only show files
 matching the extension setting of the current field.
 
-Permissions to access the file library are configurable via views admin UI
+Permissions to access the file library are configurable via Views admin UI
 (section "Access").
 If someone's not permitted to access the view, the browse button won't show.
 
