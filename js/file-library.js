@@ -70,7 +70,7 @@
         // Select this item and submit the form in one go.
         selectedFids.push($(this).data('fid'));
         $('form.file-managed-file-browser-form [name="fid"]').val(selectedFids);
-        $(this).closest('.ui-dialog').find('.ui-dialog-buttonpane .button-primary').click();
+        $(this).closest('.ui-dialog').find('.ui-dialog-buttonpane .button-primary').trigger('click');
       });
     }
   };
