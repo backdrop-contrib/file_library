@@ -119,6 +119,12 @@ function file_library_process_filepicker_enable($element, $form_state) {
     $element['browse_button']['#access'] = TRUE;
     // Override file_managed_file_browser_open with custom callback.
     $element['browse_button']['#ajax']['callback'] = 'file_library_filepicker_open';
+    // As of core 1.34 file.js has a dependency on ui.selectable.
+    // This may change in the future.
+    // We're not using it for selection, this only prevents JS errors.
+    if (!empty($element['#multiple'])) {
+      $element['#attached']['library'][] = array('system', 'ui.selectable');
+    }
   }
 
   return $element;
@@ -153,11 +159,27 @@ function file_library_filepicker_open($form, &$form_state) {
     'submit_form' => backdrop_render($submit_form),
   ));
 
+  // As of core 1.34 there's multiple upload handling.
+  $available_item_count = 1;
+  $cardinality = 1;
+  if (!empty($element['#multiple'])) {
+    $field = field_info_field($element['#field_name']);
+    if ($field['cardinality'] == FIELD_CARDINALITY_UNLIMITED) {
+      $available_item_count = 500;// Arbitrary high number.
+    }
+    else {
+      // Derive number of existing files from managed_file element delta.
+      $available_item_count = $field['cardinality'] - end($element['#array_parents']);
+    }
+    $cardinality = $field['cardinality'];
+  }
   $settings = array(
     'file' => array(
       'browser' => array(
         'selectedFid' => NULL,
         'currentFidElement' => '[name="' . $element['fid']['#name'] . '"]',
+        'availableItemCount' => $available_item_count,
+        'fieldCardinality' => $cardinality,
       ),
     ),
   );
@@ -166,6 +188,8 @@ function file_library_filepicker_open($form, &$form_state) {
     'width' => '56%',
     'modal' => TRUE,
   );
+  // For popover inside dialog.
+  backdrop_add_icons(array('warning'));
 
   $commands = array();
   $commands[] = ajax_command_settings($settings, TRUE);

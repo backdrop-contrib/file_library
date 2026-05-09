@@ -77,3 +77,19 @@
   clip: rect(1px, 1px, 1px, 1px);
   position: absolute;
 }
+#file-library-limit-hint {
+  box-shadow: 0 0 18px #0004;
+  border-color: #b93d00;
+  border-width: 2px;
+  border-radius: 3px;
+  padding: .7em 1em;
+}
+#file-library-limit-hint .icon {
+  width: 1.5em;
+  height: 1.5em;
+  margin-inline-end: .5em;
+  display: inline-block;
+  vertical-align: bottom;
+  background-color: #b93d00;
+  mask-image: var(--icon-warning);
+}
