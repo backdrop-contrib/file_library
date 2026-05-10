@@ -26,10 +26,23 @@
 
   Backdrop.fileLibrary = {};
   Backdrop.fileLibrary.dialogAfterCreate = function(event, dialog, $element) {
-    // This might be an image library dialog.
-    if (typeof Backdrop.settings.file.browser.availableItemCount === 'undefined') {
+    // Do not mess with core's image browser dialog.
+    if ($element.find('.view-image-library').length) {
       return;
     }
+    // Prevent Backdrop.file.dialogOpenEvent from breaking things. This trick
+    // works because file-library.js is attached before file.js.
+    // Probably needs tweaks every time something changes core's file.js.
+    let $otherEventContainer = $element.find('.file-browser');
+    // Initialize both offenders in a harmless way.
+    $otherEventContainer.once('file-browser');
+    if (typeof $otherEventContainer.selectable === 'function') {
+      $otherEventContainer.selectable({
+        disabled: true,
+        filter: '.no-such-selector-exists'
+      });
+    }
+
     let $browserContainer = $element.find(".file-browser-view");
     if ($browserContainer.length) {
       let selectedFids = [];
