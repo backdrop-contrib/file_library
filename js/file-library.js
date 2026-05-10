@@ -21,10 +21,6 @@
           $('.file-browser-view [data-fid=' + activeValue + ']').closest('.file-library-item').addClass('file-library-selected');
         }
       }
-      // Hack to turn off core File module click handling, which awfully gets
-      // into the way as of core 1.34.
-      // @see core/modules/file/js/file.js
-      $(window).off('dialog:aftercreate.fileBrowser', Backdrop.file.dialogOpenEvent);
     }
   };
 
