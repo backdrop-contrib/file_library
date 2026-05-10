@@ -67,9 +67,8 @@
         // over.
         $('form.file-managed-file-browser-form [name="fid"]').val(selectedFids);
       }).on('dblclick', '[data-fid]', function() {
-        // Select this item and submit the form in one go.
-        selectedFids.push($(this).data('fid'));
-        $('form.file-managed-file-browser-form [name="fid"]').val(selectedFids);
+        // Select this item and submit the form in one go. But only this one item.
+        $('form.file-managed-file-browser-form [name="fid"]').val($(this).data('fid'));
         $(this).closest('.ui-dialog').find('.ui-dialog-buttonpane .button-primary').trigger('click');
       });
     }
