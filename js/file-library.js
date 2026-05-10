@@ -39,6 +39,11 @@
         if (event.type === 'keydown' && event.which !== 13) {
           return;
         }
+        if (event.target.nodeName === 'A') {
+          // Preview link clicked, no bubbling up, let original event fire.
+          event.stopPropagation();
+          return true;
+        }
         let $currentItem = $(this).closest('.file-library-item');
         if ($currentItem.hasClass('file-library-selected')) {
           $currentItem.removeClass('file-library-selected');
