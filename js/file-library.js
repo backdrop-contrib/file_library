@@ -47,13 +47,19 @@
         let $currentItem = $(this).closest('.file-library-item');
         if ($currentItem.hasClass('file-library-selected')) {
           $currentItem.removeClass('file-library-selected');
-          let currentFid = $(this).data('fid');
-          selectedFids = selectedFids.filter(function (fid) { return fid !== currentFid; });
+          if (cardinality === 1) {
+            selectedFids = [];
+          }
+          else {
+            let currentFid = $(this).data('fid');
+            selectedFids = selectedFids.filter(function (fid) { return fid !== currentFid; });
+          }
         }
         else {
           if (selectedFids.length >= available) {
             if (cardinality === 1) {
               $browserContainer.find('.file-library-selected').removeClass('file-library-selected');
+              selectedFids = [];
             }
             else {
               window.clearTimeout(popoverTimer);
