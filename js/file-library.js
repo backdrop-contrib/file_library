@@ -26,6 +26,10 @@
 
   Backdrop.fileLibrary = {};
   Backdrop.fileLibrary.dialogAfterCreate = function(event, dialog, $element) {
+    // This might be an image library dialog.
+    if (typeof Backdrop.settings.file.browser.availableItemCount === 'undefined') {
+      return;
+    }
     let $browserContainer = $element.find(".file-browser-view");
     if ($browserContainer.length) {
       let selectedFids = [];
