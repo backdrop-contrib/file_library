@@ -21,6 +21,10 @@
           $('.file-browser-view [data-fid=' + activeValue + ']').closest('.file-library-item').addClass('file-library-selected');
         }
       }
+      // Hack to turn off core File module click handling, which awfully gets
+      // into the way as of core 1.34.
+      // @see core/modules/file/js/file.js
+      $(window).off('dialog:aftercreate.fileBrowser', Backdrop.file.dialogOpenEvent);
     }
   };
 
@@ -76,6 +80,7 @@
 
         // From here on the file module, which provides the "fid" item, takes
         // over.
+        // @see Backdrop.file.dialogCloseEvent
         $('form.file-managed-file-browser-form [name="fid"]').val(selectedFids);
       }).on('dblclick', '[data-fid]', function() {
         // Select this item and submit the form in one go. But only this one item.
