@@ -5,6 +5,12 @@
 (function ($) {
   "use strict";
 
+  // As of core 1.34 file.js has a dependency on ui.selectable.
+  // We're not using it for selection, this only prevents fatal JS errors.
+  // @see https://github.com/backdrop-contrib/file_library/issues/9
+  // @see https://github.com/backdrop/backdrop-issues/issues/7128
+  $.fn.selectable = function () {};
+
   Backdrop.behaviors.fileLibrary = {
     attach: function () {
       // If an item has been selected and it's on the current page, mark as
@@ -34,14 +40,8 @@
     // works because file-library.js is attached before file.js.
     // Probably needs tweaks every time something changes core's file.js.
     let $otherEventContainer = $element.find('.file-browser');
-    // Initialize both offenders in a harmless way.
+    // Initialize in a harmless way.
     $otherEventContainer.once('file-browser');
-    if (typeof $otherEventContainer.selectable === 'function') {
-      $otherEventContainer.selectable({
-        disabled: true,
-        filter: '.no-such-selector-exists'
-      });
-    }
 
     let $browserContainer = $element.find(".file-browser-view");
     if ($browserContainer.length) {

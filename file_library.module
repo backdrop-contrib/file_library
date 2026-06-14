@@ -124,12 +124,6 @@ function file_library_process_filepicker_enable($element, $form_state) {
     $element['browse_button']['#access'] = TRUE;
     // Override file_managed_file_browser_open with custom callback.
     $element['browse_button']['#ajax']['callback'] = 'file_library_filepicker_open';
-    // As of core 1.34 file.js has a dependency on ui.selectable.
-    // This may change in the future.
-    // We're not using it for selection, this only prevents JS errors.
-    if (!empty($element['#multiple'])) {
-      $element['#attached']['library'][] = array('system', 'ui.selectable');
-    }
   }
 
   return $element;
